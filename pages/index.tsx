@@ -1,6 +1,8 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import { withIronSessionSsr } from "iron-session/next";
+import { ironOptions } from "lib/sessionConfig";
 import styles from "../styles/Home.module.css";
 
 const Home: NextPage = () => {
@@ -68,5 +70,23 @@ const Home: NextPage = () => {
     </div>
   );
 };
+
+export const getServerSideProps = withIronSessionSsr(
+  async ({ req }) => {
+    const user = req.session.user;
+    if (!user) {
+      return {
+        redirect: {
+          permanent: false,
+          destination: "/login"
+        }
+      }
+    } else {
+      return {
+        props: {}
+      };
+    }
+  }, ironOptions
+)
 
 export default Home;
