@@ -14,16 +14,16 @@ const list = async (req: NextApiRequest, res: NextApiResponse) => {
 
   switch (req.method) {
     case "GET":
-      getHandler(req, res, user);
+      await getHandler(req, res, user);
       break;
     case "POST":
-      postHandler(req, res, user);
+      await postHandler(req, res, user);
       break;
     case "PATCH":
-      patchHandler(req, res, user);
+      await patchHandler(req, res, user);
       break;
     case "DELETE":
-      deleteHandler(req, res);
+      await deleteHandler(req, res);
       break;
     default:
       res.status(405).end();

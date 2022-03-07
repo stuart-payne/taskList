@@ -35,22 +35,23 @@ const task = async (req: NextApiRequest, res: NextApiResponse) => {
 
   switch (req.method) {
     case "GET":
-      getHandler(req, res, user);
+      await getHandler(req, res, user);
       return;
     case "POST":
-      postHandler(req, res, user);
+      await postHandler(req, res, user);
       return;
     case "DELETE":
-      deleteHandler(req, res);
+      await deleteHandler(req, res);
       return;
     case "PUT":
-      putHandler(req, res);
+      await putHandler(req, res);
       return;
     case "PATCH":
-      patchHandler(req, res);
+      console.log("got here");
+      await patchHandler(req, res);
       return;
     default:
-      res.status(400).end();
+      res.status(405).end();
       return;
   }
 };
@@ -60,9 +61,28 @@ const getHandler = async (
   res: NextApiResponse,
   user: User
 ) => {
-  res
-    .status(200)
-    .json(await prismaClient.task.findMany({ where: { userId: user.id } }));
+  const { listId } = req.query;
+  if (!listId) {
+    res
+      .status(200)
+      .json(await prismaClient.task.findMany({ where: { userId: user.id } }));
+    return;
+  } else {
+    if (typeof listId !== "string") {
+      res.status(400).end();
+      return;
+    }
+    const parsedListId = parseInt(listId);
+    if (isNaN(parsedListId)) {
+      res.status(400).end();
+      return;
+    }
+    res.status(200).json(
+      await prismaClient.task.findMany({
+        where: { AND: [{ userId: user.id }, { listId: parsedListId }] },
+      })
+    );
+  }
 };
 
 const postHandler = async (
@@ -111,7 +131,7 @@ const deleteHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (batch) {
     const batchPayload = await prismaClient.task.deleteMany({
       where: {
-        OR: batch.map(({ id }: { id: number }) => ({ id })),
+        OR: batch.map((taskId: number) => ({ id: taskId })),
       },
     });
     res.status(200).json({ batchPayload });
@@ -127,9 +147,9 @@ const deleteHandler = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const putHandler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id, description, deadline, listId } = req.body;
+  const { id, name, description, deadline } = req.body;
 
-  if (!id || !description || !deadline || !listId) {
+  if (!id || !name || !description || !deadline) {
     res.status(400).end();
     return;
   }
@@ -146,9 +166,9 @@ const putHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     where: { id },
     data: {
       id,
+      name,
       description,
       deadline: parsedDeadline,
-      listId,
     },
   });
   res.status(200).end();
@@ -158,6 +178,9 @@ const putHandler = async (req: NextApiRequest, res: NextApiResponse) => {
 const patchHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { batch, listId } = req.body;
 
+  console.log(batch);
+  console.log(listId);
+
   if (!Array.isArray(batch) || !listId || isNaN(listId)) {
     res.status(400).end();
     return;
@@ -165,7 +188,7 @@ const patchHandler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   await prismaClient.task.updateMany({
     where: {
-      OR: batch.map(({ id }: { id: number }) => ({ id })),
+      OR: batch.map((id: number) => ({ id })),
     },
     data: {
       listId,

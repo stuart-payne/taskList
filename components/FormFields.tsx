@@ -20,7 +20,6 @@ interface TextFieldProps extends CustomFieldProps {
 
 export const TextField = ({ label, ...props }: TextFieldProps) => {
   const [field, { error, touched }, helpers] = useField(props);
-  console.log(error);
   return (
     <FormControl isInvalid={touched && error !== undefined}>
       <FormLabel>{label}</FormLabel>
@@ -34,8 +33,19 @@ export const TextAreaField = ({ label, ...props }: CustomFieldProps) => {
   const [field, { touched, error }, helpers] = useField(props);
   return (
     <FormControl isInvalid={touched && error !== undefined}>
-      <FormLabel>label</FormLabel>
+      <FormLabel>{label}</FormLabel>
       <Textarea {...field} {...props} />
+      <FormErrorMessage>{error}</FormErrorMessage>
+    </FormControl>
+  );
+};
+
+export const DateTimeField = ({ label, ...props }: CustomFieldProps) => {
+  const [field, { touched, error }, helper] = useField(props);
+  return (
+    <FormControl isInvalid={touched && error !== undefined}>
+      <FormLabel>{label}</FormLabel>
+      <input {...field} {...props} type="datetime-local" />
       <FormErrorMessage>{error}</FormErrorMessage>
     </FormControl>
   );

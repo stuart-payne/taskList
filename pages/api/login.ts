@@ -46,8 +46,8 @@ const postHandler = async (
     req.session.user = {
       id: user.id,
     };
-    req.session.save();
-    res.redirect("/");
+    await req.session.save();
+    res.status(200).end();
     return;
   } else {
     res.status(403).json({ message: "Incorrect password" });

@@ -21,6 +21,7 @@ model Task {
   description String
   deadline    DateTime
   completed   Boolean  @default(false)
+  failed Boolean @default(false)
   notified    Boolean  @default(false)
   list        List     @relation(fields: [listId], references: [id])
   listId      Int

@@ -44,7 +44,7 @@ const postHandler = async (req: NextApiRequest, res: NextApiResponse) => {
       id: savedUser.id,
     };
     await req.session.save();
-    return res.redirect("/");
+    return res.status(200).end();
   }
 };
 
